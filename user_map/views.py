@@ -33,7 +33,7 @@ from user_map.forms import (
     CustomPasswordResetForm)
 from user_map.models import User
 from user_map.app_settings import (
-    PROJECT_NAME, USER_ROLES, DEFAULT_FROM_MAIL, LEAFLET_TILES)
+    PROJECT_NAME, DEFAULT_FROM_MAIL, LEAFLET_TILES)
 from user_map.utilities.decorators import login_forbidden
 
 
@@ -54,9 +54,6 @@ def index(request):
     user_menu_button = loader.render_to_string(
         'user_map/user_menu_button.html', {'user': request.user})
 
-    legend = loader.render_to_string(
-        'user_map/legend.html', {'user_roles': USER_ROLES})
-
     leaflet_tiles = dict(
         url=LEAFLET_TILES[1],
         attribution=LEAFLET_TILES[2]
@@ -65,15 +62,13 @@ def index(request):
         'data_privacy_content': data_privacy_content,
         'information_modal': information_modal,
         'user_menu_button': user_menu_button,
-        'user_roles': json.dumps(USER_ROLES),
-        'legend': legend,
         'leaflet_tiles': leaflet_tiles
     }
     return render(request, 'user_map/index.html', context)
 
 
 def get_users(request):
-    """Return a json document of users with given role.
+    """Return a json document of all users.
 
     This will only fetch users who have approved by email and still active.
 
@@ -81,12 +76,8 @@ def get_users(request):
     :type request: request
     """
     if request.method == 'GET':
-        # Get data:
-        user_role = str(request.GET['user_role'])
-
         # Get user
         users = User.objects.filter(
-            role__name=user_role,
             is_confirmed=True,
             is_active=True)
         users_json = loader.render_to_string(
@@ -109,6 +100,7 @@ def register(request):
         form = RegistrationForm(data=request.POST)
         if form.is_valid():
             user = form.save()
+            form.save_m2m()
 
             current_site = get_current_site(request)
             site_name = current_site.name
@@ -265,6 +257,7 @@ def update_user(request):
             change_password_form = PasswordChangeForm(user=request.user)
             if basic_info_form.is_valid():
                 user = basic_info_form.save()
+                basic_info_form.save_m2m()
                 messages.success(
                     request, 'You have successfully changed your information!')
                 return HttpResponseRedirect(
@@ -399,14 +392,15 @@ def download(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="users.csv"'
 
-    users = User.objects.filter(role__sort_number__gte=1)
+    users = User.objects.filter(roles__sort_number__gte=1).distinct()
     writer = csv.writer(response)
 
-    fields = ['name', 'website', 'role', 'location']
+    fields = ['name', 'website', 'location']
     headers = ['No.']
     for field in fields:
         verbose_name_field = users.model._meta.get_field(field).verbose_name
         headers.append(verbose_name_field)
+    headers.append('Role(s)')
     writer.writerow(headers)
 
     for idx, user in enumerate(users):
@@ -414,6 +408,7 @@ def download(request):
         for field in fields:
             field_value = getattr(user, field)
             row.append(field_value)
+        row.append(user.get_roles())
         writer.writerow(row)
 
     return response

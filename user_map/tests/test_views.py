@@ -18,7 +18,6 @@ class UserMapViewTests(TestCase):
         self.user = UserFactory.create(
             email=self.email,
             password=self.password,
-            role__name='Test User',
             is_confirmed=True)
         self.client = Client()
 
@@ -26,7 +25,6 @@ class UserMapViewTests(TestCase):
         """Test for index view."""
         response = self.client.get(reverse('user_map:index'))
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'user_map/legend.html')
         self.assertTemplateUsed(response, 'user_map/data_privacy.html')
         self.assertContains(response, 'Sign Up')
         self.assertContains(response, 'Log In')
@@ -42,9 +40,7 @@ class UserMapViewTests(TestCase):
 
     def test_get_users(self):
         """Test for get_users view."""
-        response = self.client.get(
-            reverse('user_map:get_users'),
-            {'user_role': 'Test User'})
+        response = self.client.get(reverse('user_map:get_users'))
         self.assertEqual(response['Content-Type'], 'application/json')
         self.assertContains(response, 'FeatureCollection')
         self.assertContains(response, self.user.name)
@@ -72,7 +68,7 @@ class UserMapViewTests(TestCase):
                 'password': 'password',
                 'password2': 'password',
                 'website': '',
-                'role': '1',
+                'roles': '1',
                 'location': ('{"type":"Point","coordinates":[22.5,'
                              '-16.63619187839765]}')
             })
@@ -169,7 +165,7 @@ class UserMapViewTests(TestCase):
                 'name': 'UpdatedName',
                 'email': self.email,
                 'website': 'http://updated-site.com',
-                'role': '1',
+                'roles': '1',
                 'location': ('{"type":"Point","coordinates":[22.5, '
                              '-16.63619187839765]}'),
                 'email_updates': 'on',
