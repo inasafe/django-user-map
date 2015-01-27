@@ -1,12 +1,15 @@
 # coding=utf-8
 """Model class of custom user for InaSAFE User Map."""
+import os
+
 from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.gis.db import models
 from django.utils.crypto import get_random_string
+from django.conf import settings
 
 from user_map.models.user_manager import CustomUserManager
-from user_map.models.role import Role
-
+from user_map.models.inasafe_role import InasafeRole
+from user_map.models.osm_role import OsmRole
 from user_map.utilities.utilities import wrap_number
 
 
@@ -28,6 +31,12 @@ class User(AbstractBaseUser):
         null=False,
         blank=False,
         unique=True)
+    image = models.ImageField(
+        verbose_name='Image',
+        help_text='Your photo',
+        upload_to=os.path.join(settings.MEDIA_ROOT, 'images/users/'),
+        blank=True,
+        default=os.path.join(settings.MEDIA_ROOT, 'images/users/default.png'))
     website = models.URLField(
         verbose_name='Website',
         help_text='Optional link to your personal or organisation web site.',
@@ -40,7 +49,20 @@ class User(AbstractBaseUser):
         max_length=255,
         null=False,
         blank=False)
-    roles = models.ManyToManyField(Role, verbose_name='Roles', blank=False)
+    inasafe_roles = models.ManyToManyField(
+        InasafeRole,
+        verbose_name='InaSAFE Roles',
+        blank=False)
+    osm_roles = models.ManyToManyField(
+        OsmRole,
+        verbose_name='OSM Roles',
+        blank=False)
+    osm_username = models.CharField(
+        verbose_name='OSM Username',
+        help_text='Your OSM username.',
+        max_length=100,
+        null=False,
+        blank=True)
     email_updates = models.BooleanField(
         verbose_name='Receiving Updates',
         help_text='Tick this to receive occasional news email messages.',
@@ -48,6 +70,14 @@ class User(AbstractBaseUser):
     date_joined = models.DateTimeField(
         verbose_name='Join Date',
         auto_now_add=True)
+    is_certified_inasafe_trainer = models.BooleanField(
+        verbose_name='Certified InaSAFE Trainer',
+        help_text='Whether this user is a certified InaSAFE trainer or not.',
+        default=False)
+    is_certified_osm_trainer = models.BooleanField(
+        verbose_name='Admin Status',
+        help_text='Whether this user is a certified OSM trainer or not.',
+        default=False)
     is_active = models.BooleanField(
         verbose_name='Active Status',
         help_text='Whether this user is still active or not (a user could be '
@@ -91,9 +121,13 @@ class User(AbstractBaseUser):
         """
         return self.name
 
-    def get_roles(self):
-        """The role(s) of the user."""
-        return ', '.join([role.name for role in self.roles.all()])
+    def get_inasafe_roles(self):
+        """The InaSAFE role(s) of the user."""
+        return ', '.join([role.name for role in self.inasafe_roles.all()])
+
+    def get_osm_roles(self):
+        """The OSM role(s) of the user."""
+        return ', '.join([role.name for role in self.osm_roles.all()])
 
     @property
     def is_staff(self):

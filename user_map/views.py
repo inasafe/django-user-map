@@ -97,7 +97,7 @@ def register(request):
     :type request: request
     """
     if request.method == 'POST':
-        form = RegistrationForm(data=request.POST)
+        form = RegistrationForm(request.POST, request.FILES)
         if form.is_valid():
             user = form.save()
             form.save_m2m()
@@ -253,7 +253,7 @@ def update_user(request):
         if 'change_basic_info' in request.POST:
             anchor_id = '#basic-information'
             basic_info_form = BasicInformationForm(
-                data=request.POST, instance=request.user)
+                request.POST, request.FILES, instance=request.user)
             change_password_form = PasswordChangeForm(user=request.user)
             if basic_info_form.is_valid():
                 user = basic_info_form.save()
@@ -392,7 +392,7 @@ def download(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="users.csv"'
 
-    users = User.objects.filter(roles__sort_number__gte=1).distinct()
+    users = User.objects.all()
     writer = csv.writer(response)
 
     fields = ['name', 'website', 'location']
@@ -400,7 +400,8 @@ def download(request):
     for field in fields:
         verbose_name_field = users.model._meta.get_field(field).verbose_name
         headers.append(verbose_name_field)
-    headers.append('Role(s)')
+    headers.append('InaSAFE Role(s)')
+    headers.append('OSM Role(s)')
     writer.writerow(headers)
 
     for idx, user in enumerate(users):
@@ -408,7 +409,8 @@ def download(request):
         for field in fields:
             field_value = getattr(user, field)
             row.append(field_value)
-        row.append(user.get_roles())
+        row.append(user.get_inasafe_roles())
+        row.append(user.get_osm_roles())
         writer.writerow(row)
 
     return response

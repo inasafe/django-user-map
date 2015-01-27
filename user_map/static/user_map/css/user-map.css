@@ -44,6 +44,11 @@ body > .container {
   max-width: 700px;
 }
 
+.form-group .multiple-checkbox ul {
+    padding-left: 0;
+    list-style: outside none none;
+}
+
 .login-form {
   max-width: 500px;
 }

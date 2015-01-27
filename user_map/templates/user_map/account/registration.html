@@ -11,7 +11,7 @@
 {% block main_content %}
   <div class="container">
     <div class="page-header">
-    <h2>Add me to map! <br><small>Please provide your information on the
+    <h2>Add me to the map! <br><small>Please provide your information on the
       form
       below.</small></h2>
     </div>
@@ -26,7 +26,7 @@
           {% endif %}
         {% endfor %}
       {% endif %}
-      <form class="form-horizontal" method="POST" >
+      <form class="form-horizontal" method="POST" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form|bootstrap_horizontal:'col-lg-3'}}
         <div class="form-group">
@@ -38,3 +38,24 @@
      </div>
   </div>
 {% endblock main_content %}
+
+{% block js_container %}
+  <script type="text/javascript">
+    var $osm_roles_checkboxes = $('input[name="osm_roles"]');
+    var $osm_username = $('input[name="osm_username"]');
+    showOSMInput();
+
+    $osm_roles_checkboxes.click(function() {
+      showOSMInput();
+    });
+
+    function showOSMInput() {
+      var $osm_roles = $('input[name="osm_roles"]:checked');
+      if ($osm_roles.length > 0) {
+        $osm_username.parent().parent().show('fast');
+      } else {
+        $osm_username.parent().parent().hide('fast');
+      }
+    }
+  </script>
+{% endblock js_container %}

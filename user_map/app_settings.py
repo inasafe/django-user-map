@@ -22,8 +22,8 @@ BRAND_LOGO = getattr(settings, 'USER_MAP_BRAND_LOGO', default_brand_logo)
 default_favicon_file = 'user_map/img/user-icon.png'
 FAVICON_FILE = getattr(settings, 'USER_MAP_FAVICON_FILE', default_favicon_file)
 
-#  USER ROLES: All user roles and their icons
-default_user_roles = [
+# ROLES: All roles and their icons
+default_inasafe_roles = [
     dict(
         name='User',
         icon='user_map/img/user-icon.png',
@@ -36,7 +36,19 @@ default_user_roles = [
         name='Developer',
         icon='user_map/img/developer-icon.png',
         shadow_icon='user_map/img/shadow-icon.png')]
-USER_ROLES = getattr(settings, 'USER_MAP_USER_ROLES', default_user_roles)
+INASAFE_ROLES = getattr(
+    settings, 'USER_MAP_INASAFE_ROLES', default_inasafe_roles)
+
+default_osm_roles = [
+    dict(
+        name='Mapper',
+        icon='user_map/img/user-icon.png',
+        shadow_icon='user_map/img/shadow-icon.png'),
+    dict(
+        name='Trainer',
+        icon='user_map/img/trainer-icon.png',
+        shadow_icon='user_map/img/shadow-icon.png')]
+OSM_ROLES = getattr(settings, 'USER_MAP_OSM_ROLES', default_osm_roles)
 
 # MAIL SENDER
 default_mail_sender = 'noreply@inasafe.org'

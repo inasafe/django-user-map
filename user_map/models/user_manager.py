@@ -5,7 +5,6 @@ from django.contrib.auth.models import BaseUserManager
 from django.contrib.gis.geos import Point
 from django.utils.crypto import get_random_string
 
-from user_map.models.role import Role
 
 
 class CustomUserManager(BaseUserManager, GeoManager):
@@ -19,7 +18,6 @@ class CustomUserManager(BaseUserManager, GeoManager):
             name,
             email,
             location,
-            roles,
             email_updates,
             website='',
             password=None):
@@ -33,9 +31,6 @@ class CustomUserManager(BaseUserManager, GeoManager):
 
         :param location: The location of the user in (long, lat)
         :type location: Point
-
-        :param roles: List of roles.
-        :type roles: list
 
         :param email_updates: The status email_updates of the user.
         :type email_updates: bool
@@ -55,9 +50,6 @@ class CustomUserManager(BaseUserManager, GeoManager):
         if not location:
             raise ValueError('User must have location.')
 
-        if not roles:
-            raise ValueError('User must have role.')
-
         if not email_updates:
             raise ValueError('User must have email_updates status.')
 
@@ -72,10 +64,6 @@ class CustomUserManager(BaseUserManager, GeoManager):
 
         user.set_password(password)
         user.save(using=self._db)
-
-        # Add roles
-        for role in roles:
-            user.roles.add(role)
 
         return user
 
@@ -93,17 +81,11 @@ class CustomUserManager(BaseUserManager, GeoManager):
         """
         # Use predefined location, role, email_updates, is_active, is_admin
         location = Point(106.8, -6.2)
-        try:
-            role = Role.objects.get(name='Super User')
-        except Role.DoesNotExist:
-            role = Role(name='Super User', sort_number=-999)
-            role.save()
 
         user = self.create_user(
             name,
             email,
             location=location,
-            roles=[role],
             email_updates=True,
             password=password)
         user.email_updates = True
