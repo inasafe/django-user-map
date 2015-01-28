@@ -6,7 +6,6 @@ import uuid
 from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.gis.db import models
 from django.utils.crypto import get_random_string
-from django.conf import settings
 from django.core.exceptions import ValidationError
 
 from user_map.models.user_manager import CustomUserManager
@@ -212,6 +211,12 @@ class User(AbstractBaseUser):
         if not self.pk:
             # New object here
             self.key = get_random_string()
+        else:
+            # Saving a not new object
+            user = User.objects.get(pk=self.pk)
+            # Remove the old image
+            user.image.delete(save=False)
+
         # Wrap location data
         self.location.x = wrap_number(self.location.x, [-180, 180])
         self.location.y = wrap_number(self.location.y, [-90, 90])
