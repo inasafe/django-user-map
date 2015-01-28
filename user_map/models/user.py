@@ -1,6 +1,7 @@
 # coding=utf-8
 """Model class of custom user for InaSAFE User Map."""
 import os
+import uuid
 
 from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.gis.db import models
@@ -34,6 +35,28 @@ class User(AbstractBaseUser):
             raise ValidationError(
                 'Maximum image size is %s MB' % size_limit_mb)
 
+    def image_path(instance, file_name):
+        """Return the proper image path to upload.
+
+        :param file_name: The original file name.
+        :type file_name: str
+        """
+        _, ext = os.path.splitext(file_name)
+
+        file_name = '%s%s' % (uuid.uuid4().hex, ext)
+        return os.path.join(
+            'user_map',
+            'images',
+            file_name)
+
+    @staticmethod
+    def default_image_path():
+        """Return default image path."""
+        return os.path.join(
+            'user_map',
+            'images',
+            'default.png')
+
     name = models.CharField(
         verbose_name='Name',
         help_text='Your name.',
@@ -49,10 +72,9 @@ class User(AbstractBaseUser):
     image = models.ImageField(
         verbose_name='Image',
         help_text='Your photo',
-        upload_to=os.path.join(settings.MEDIA_ROOT, 'user_map/images/'),
+        upload_to=image_path,
         blank=True,
-        default=os.path.join(
-            settings.MEDIA_ROOT, 'user_map/images/default.png'),
+        default=default_image_path,
         validators=[validate_image])
     website = models.URLField(
         verbose_name='Website',
