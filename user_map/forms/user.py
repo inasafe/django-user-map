@@ -5,6 +5,7 @@ from django.contrib.auth.forms import PasswordResetForm
 from leaflet.forms.widgets import LeafletWidget
 
 from user_map.models import User, InasafeRole, OsmRole
+from user_map.forms.custom_widget import CustomClearableFileInput
 
 
 class RegistrationForm(forms.ModelForm):
@@ -22,7 +23,10 @@ class RegistrationForm(forms.ModelForm):
             attrs={
                 'placeholder': 'john@doe.com'})
     )
-    image = forms.ImageField(required=False)
+    image = forms.ImageField(
+        required=False,
+        widget=CustomClearableFileInput()
+    )
     password = forms.CharField(
         required=True,
         label='Password',
@@ -131,7 +135,10 @@ class BasicInformationForm(forms.ModelForm):
                 'readonly': 'readonly',
                 'placeholder': 'john@doe.com'})
     )
-    image = forms.ImageField(required=False)
+    image = forms.ImageField(
+        required=False,
+        widget=CustomClearableFileInput()
+    )
     website = forms.URLField(
         required=False,
         label='Your website',
