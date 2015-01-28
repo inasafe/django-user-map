@@ -6,6 +6,7 @@ from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.gis.db import models
 from django.utils.crypto import get_random_string
 from django.conf import settings
+from django.core.exceptions import ValidationError
 
 from user_map.models.user_manager import CustomUserManager
 from user_map.models.inasafe_role import InasafeRole
@@ -15,9 +16,23 @@ from user_map.utilities.utilities import wrap_number
 
 class User(AbstractBaseUser):
     """User class for InaSAFE User Map."""
+
     class Meta:
         """Meta class."""
         app_label = 'user_map'
+
+    def validate_image(fieldfile_obj):
+        """Validate the image uploaded by user.
+
+        :param fieldfile_obj: The object of the file field.
+        :type fieldfile_obj: File (django.core.files)
+        """
+        file_size = fieldfile_obj.file.size
+        size_limit_mb = 2.0
+        size_limit = size_limit_mb * 1024 * 1024
+        if file_size > size_limit:
+            raise ValidationError(
+                'Maximum image size is %s MB' % size_limit_mb)
 
     name = models.CharField(
         verbose_name='Name',
@@ -34,9 +49,11 @@ class User(AbstractBaseUser):
     image = models.ImageField(
         verbose_name='Image',
         help_text='Your photo',
-        upload_to=os.path.join(settings.MEDIA_ROOT, 'images/users/'),
+        upload_to=os.path.join(settings.MEDIA_ROOT, 'user_map/images/'),
         blank=True,
-        default=os.path.join(settings.MEDIA_ROOT, 'images/users/default.png'))
+        default=os.path.join(
+            settings.MEDIA_ROOT, 'user_map/images/default.png'),
+        validators=[validate_image])
     website = models.URLField(
         verbose_name='Website',
         help_text='Optional link to your personal or organisation web site.',
@@ -166,6 +183,7 @@ class User(AbstractBaseUser):
         :rtype: bool
         """
         return self.is_admin
+
 
     def save(self, *args, **kwargs):
         """Override save method."""
