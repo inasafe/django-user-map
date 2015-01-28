@@ -80,8 +80,10 @@ def get_users(request):
         users = User.objects.filter(
             is_confirmed=True,
             is_active=True)
+        context = {'users': users}
         users_json = loader.render_to_string(
-            'user_map/users.json', {'users': users})
+            'user_map/users.json',
+            context_instance=RequestContext(request, context))
 
         # Return Response
         return HttpResponse(users_json, content_type='application/json')

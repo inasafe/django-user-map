@@ -94,3 +94,7 @@ body > .container {
   line-height: 18px;
   color: #555;
 }
+
+.leaflet-popup-content p {
+  margin: 5px 0px !important;
+}
