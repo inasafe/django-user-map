@@ -49,7 +49,7 @@ class UserMapViewTests(TestCase):
         """Test get_users view."""
         response = self.client.post(
             reverse('user_map:get_users'),
-            {'user_role': 'Test User'})
+            {'project': 'Test User'})
         self.assertEqual(response.status_code, 404)
 
     def test_show_register_page(self):

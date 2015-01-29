@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.db import models, migrations
+from django.db import migrations
 
-from user_map.app_settings import USER_ROLES
+from user_map.app_settings import INASAFE_ROLES, OSM_ROLES
 
 
 def populate_roles(apps, schema_editor):
@@ -15,10 +15,19 @@ def populate_roles(apps, schema_editor):
     :param schema_editor: Django db abstraction for turning model into db.
     :type schema_editor: django.db.backends.schema
     """
-    Role = apps.get_model('user_map', 'Role')
-    for idx, user_role in enumerate(USER_ROLES):
-        Role.objects.create(name=user_role['name'], sort_number=(idx + 1))
+    # Populate InaSAFE Roles
+    InasafeRole = apps.get_model('user_map', 'InasafeRole')
+    for idx, user_role in enumerate(INASAFE_ROLES):
+        InasafeRole.objects.create(
+            name=user_role['name'],
+            sort_number=(idx + 1))
 
+    # Populate OSM Roles
+    OsmRole = apps.get_model('user_map', 'OsmRole')
+    for idx, user_role in enumerate(OSM_ROLES):
+        OsmRole.objects.create(
+            name=user_role['name'],
+            sort_number=(idx + 1))
 
 class Migration(migrations.Migration):
 

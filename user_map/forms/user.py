@@ -4,55 +4,77 @@ from django.contrib.gis import forms
 from django.contrib.auth.forms import PasswordResetForm
 from leaflet.forms.widgets import LeafletWidget
 
-from user_map.models import User, Role
+from user_map.models import User, InasafeRole, OsmRole
+from user_map.forms.custom_widget import CustomClearableFileInput
 
 
 class RegistrationForm(forms.ModelForm):
     """Form for user model."""
     name = forms.CharField(
         required=True,
-        label='Your name',
+        label='Name',
         widget=forms.TextInput(
             attrs={'placeholder': 'John Doe'})
     )
     email = forms.EmailField(
         required=True,
-        label='Your email',
+        label='Email',
         widget=forms.EmailInput(
             attrs={
                 'placeholder': 'john@doe.com'})
     )
+    image = forms.ImageField(
+        required=False,
+        widget=CustomClearableFileInput()
+    )
     password = forms.CharField(
         required=True,
-        label='Your password',
+        label='Password',
         widget=forms.PasswordInput()
     )
     password2 = forms.CharField(
         required=True,
-        label='Your password (again)',
+        label='Password (again)',
         widget=forms.PasswordInput()
     )
     website = forms.URLField(
         required=False,
-        label='Your website',
+        label='Website',
         widget=forms.URLInput(
             attrs={'placeholder': 'http://john.doe.com'})
+    )
+    inasafe_roles = forms.ModelMultipleChoiceField(
+        required=True,
+        label='Your InaSAFE role(s)',
+        queryset=InasafeRole.objects.all(),
+        widget=forms.CheckboxSelectMultiple
+    )
+    osm_roles = forms.ModelMultipleChoiceField(
+        required=False,
+        label='Your OSM role(s)',
+        queryset=OsmRole.objects.all(),
+        widget=forms.CheckboxSelectMultiple
+    )
+    osm_username = forms.CharField(
+        required=False,
+        label='OSM Username',
+        widget=forms.TextInput(
+            attrs={'placeholder': 'johndoe'})
     )
     location = forms.PointField(
         label='Click your location on the map',
         widget=LeafletWidget())
-    roles = forms.ModelMultipleChoiceField(
-        label='Your role(s)',
-        queryset=Role.objects.filter(sort_number__gte=1))
     email_updates = forms.BooleanField(
         required=False,
-        label='Receive project news and updates')
+        label='Receive project news and updates'
+    )
 
     class Meta:
         """Association between models and this form."""
         model = User
-        fields = ['name', 'email', 'password', 'password2', 'website', 'roles',
-                  'location', 'email_updates']
+        fields = ['name', 'email', 'image', 'password', 'password2', 'website',
+                  'inasafe_roles', 'osm_roles', 'osm_username', 'location',
+                  'email_updates']
 
     def clean(self):
         """Verifies that the values entered into the password fields match."""
@@ -86,15 +108,13 @@ class LoginForm(forms.Form):
         widget=forms.EmailInput(
             attrs={
                 'class': 'form-control',
-                'placeholder': 'john@doe.com',
-            })
+                'placeholder': 'john@doe.com'})
     )
     password = forms.CharField(
         widget=forms.PasswordInput(
             attrs={
                 'class': 'form-control',
-                'placeholder': 'Your s3cr3T password'
-            })
+                'placeholder': 'Your s3cr3T password'})
     )
 
 
@@ -115,6 +135,10 @@ class BasicInformationForm(forms.ModelForm):
                 'readonly': 'readonly',
                 'placeholder': 'john@doe.com'})
     )
+    image = forms.ImageField(
+        required=False,
+        widget=CustomClearableFileInput()
+    )
     website = forms.URLField(
         required=False,
         label='Your website',
@@ -122,9 +146,24 @@ class BasicInformationForm(forms.ModelForm):
             attrs={
                 'placeholder': 'http://john.doe.com'})
     )
-    roles = forms.ModelMultipleChoiceField(
-        label='Your role(s)',
-        queryset=Role.objects.filter(sort_number__gte=1))
+    inasafe_roles = forms.ModelMultipleChoiceField(
+        required=True,
+        label='Your InaSAFE role(s)',
+        queryset=InasafeRole.objects.filter(sort_number__gte=1),
+        widget=forms.CheckboxSelectMultiple
+    )
+    osm_roles = forms.ModelMultipleChoiceField(
+        required=False,
+        label='Your OSM role(s)',
+        queryset=OsmRole.objects.filter(sort_number__gte=1),
+        widget=forms.CheckboxSelectMultiple)
+    osm_username = forms.CharField(
+        required=False,
+        label='OSM Username',
+        widget=forms.TextInput(
+            attrs={'placeholder': 'johndoe'}
+        )
+    )
     email_updates = forms.BooleanField(
         required=False,
         label='Receive project news and updates')
@@ -135,8 +174,8 @@ class BasicInformationForm(forms.ModelForm):
     class Meta:
         """Association between models and this form."""
         model = User
-        fields = ['name', 'email', 'website', 'roles', 'location',
-                  'email_updates']
+        fields = ['name', 'email', 'image', 'website', 'inasafe_roles',
+                  'osm_roles', 'osm_username', 'location', 'email_updates']
 
     def save(self, commit=True):
         """Save form.

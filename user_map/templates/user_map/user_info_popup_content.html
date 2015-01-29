@@ -1,7 +1,7 @@
 {% spaceless %}
-  <span class='glyphicon glyphicon-user'></span> {{ user.name }}<br>
+  <img class='img-responsive' width='220px' src='{{ MEDIA_URL }}{{ user.image }}'>
+  <p class='centered'><b>{{ user.name }}</b></p>
   {% if user.website != "" %}
-    <span class='glyphicon glyphicon-home'></span><a href='{{ user.website }}' target='_blank'> Website</a><br>
+    <p align='center'><a href='{{ user.website }}' target='_blank'> {{ user.website }}</a><p align='center'>
   {% endif %}
-  <span class='glyphicon glyphicon-info-sign'></span> {{ user.get_roles }}
 {% endspaceless %}

@@ -1,20 +1,19 @@
 # coding=utf-8
-"""Model class for Role"""
+"""Model class for OSM Role"""
 from django.contrib.gis.db import models
 
 
-class Role(models.Model):
-    """Role for users e.g. developer, trainer, user."""
+class OsmRole(models.Model):
+    """OSM Role for users e.g. OSM Mapper, Trainer."""
     class Meta:
         """Meta class."""
         app_label = 'user_map'
 
     name = models.CharField(
-        help_text='How would you define your participation?',
+        help_text='How would you define your OSM Role in this project?',
         max_length=100,
         null=False,
-        blank=False,
-        unique=True)
+        blank=False)
     sort_number = models.IntegerField(
         help_text='Sorting order for role in role list.',
         null=True,

@@ -33,7 +33,7 @@ from user_map.forms import (
     CustomPasswordResetForm)
 from user_map.models import User
 from user_map.app_settings import (
-    PROJECT_NAME, DEFAULT_FROM_MAIL, LEAFLET_TILES)
+    PROJECT_NAME, PROJECTS, DEFAULT_FROM_MAIL, LEAFLET_TILES)
 from user_map.utilities.decorators import login_forbidden
 
 
@@ -54,6 +54,9 @@ def index(request):
     user_menu_button = loader.render_to_string(
         'user_map/user_menu_button.html', {'user': request.user})
 
+    legend = loader.render_to_string(
+        'user_map/legend.html', {'projects': PROJECTS})
+
     leaflet_tiles = dict(
         url=LEAFLET_TILES[1],
         attribution=LEAFLET_TILES[2]
@@ -62,26 +65,46 @@ def index(request):
         'data_privacy_content': data_privacy_content,
         'information_modal': information_modal,
         'user_menu_button': user_menu_button,
+        'projects': json.dumps(PROJECTS),
+        'legend': legend,
         'leaflet_tiles': leaflet_tiles
     }
     return render(request, 'user_map/index.html', context)
 
 
 def get_users(request):
-    """Return a json document of all users.
+    """Return a json document of users of the project.
 
-    This will only fetch users who have approved by email and still active.
+    Users will belong to InaSAFE layer if they only have InaSAFE roles. If
+    they have OSM role(s), they will belong to OSM layers.
+
+    This will only fetch users who have approved the registration by email and
+    still active.
 
     :param request: A django request object.
     :type request: request
     """
+
     if request.method == 'GET':
-        # Get user
-        users = User.objects.filter(
-            is_confirmed=True,
-            is_active=True)
+        # Get data:
+        project = str(request.GET['project'])
+
+        if project.lower() == 'inasafe':
+            users = User.objects.filter(
+                is_confirmed=True,
+                is_active=True,
+                osm_roles=None)
+        else:
+            inasafe_users = User.objects.filter(
+                is_confirmed=True,
+                is_active=True,
+                osm_roles=None).values('id')
+            users = User.objects.exclude(id__in=inasafe_users)
+
+        context = {'users': users}
         users_json = loader.render_to_string(
-            'user_map/users.json', {'users': users})
+            'user_map/users.json',
+            context_instance=RequestContext(request, context))
 
         # Return Response
         return HttpResponse(users_json, content_type='application/json')
@@ -97,7 +120,7 @@ def register(request):
     :type request: request
     """
     if request.method == 'POST':
-        form = RegistrationForm(data=request.POST)
+        form = RegistrationForm(request.POST, request.FILES)
         if form.is_valid():
             user = form.save()
             form.save_m2m()
@@ -253,7 +276,7 @@ def update_user(request):
         if 'change_basic_info' in request.POST:
             anchor_id = '#basic-information'
             basic_info_form = BasicInformationForm(
-                data=request.POST, instance=request.user)
+                request.POST, request.FILES, instance=request.user)
             change_password_form = PasswordChangeForm(user=request.user)
             if basic_info_form.is_valid():
                 user = basic_info_form.save()
@@ -392,7 +415,7 @@ def download(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="users.csv"'
 
-    users = User.objects.filter(roles__sort_number__gte=1).distinct()
+    users = User.objects.all()
     writer = csv.writer(response)
 
     fields = ['name', 'website', 'location']
@@ -400,7 +423,8 @@ def download(request):
     for field in fields:
         verbose_name_field = users.model._meta.get_field(field).verbose_name
         headers.append(verbose_name_field)
-    headers.append('Role(s)')
+    headers.append('InaSAFE Role(s)')
+    headers.append('OSM Role(s)')
     writer.writerow(headers)
 
     for idx, user in enumerate(users):
@@ -408,7 +432,8 @@ def download(request):
         for field in fields:
             field_value = getattr(user, field)
             row.append(field_value)
-        row.append(user.get_roles())
+        row.append(user.get_inasafe_roles())
+        row.append(user.get_osm_roles())
         writer.writerow(row)
 
     return response

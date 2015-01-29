@@ -1,20 +1,60 @@
 # coding=utf-8
 """Model class of custom user for InaSAFE User Map."""
+import os
+import uuid
+
 from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.gis.db import models
 from django.utils.crypto import get_random_string
+from django.core.exceptions import ValidationError
 
 from user_map.models.user_manager import CustomUserManager
-from user_map.models.role import Role
-
+from user_map.models.inasafe_role import InasafeRole
+from user_map.models.osm_role import OsmRole
 from user_map.utilities.utilities import wrap_number
 
 
 class User(AbstractBaseUser):
     """User class for InaSAFE User Map."""
+
     class Meta:
         """Meta class."""
         app_label = 'user_map'
+
+    def validate_image(fieldfile_obj):
+        """Validate the image uploaded by user.
+
+        :param fieldfile_obj: The object of the file field.
+        :type fieldfile_obj: File (django.core.files)
+        """
+        file_size = fieldfile_obj.file.size
+        size_limit_mb = 2.0
+        size_limit = size_limit_mb * 1024 * 1024
+        if file_size > size_limit:
+            raise ValidationError(
+                'Maximum image size is %s MB' % size_limit_mb)
+
+    def image_path(instance, file_name):
+        """Return the proper image path to upload.
+
+        :param file_name: The original file name.
+        :type file_name: str
+        """
+        _, ext = os.path.splitext(file_name)
+
+        file_name = '%s%s' % (uuid.uuid4().hex, ext)
+        return os.path.join(
+            'user_map',
+            'images',
+            file_name)
+
+    @staticmethod
+    def default_image_path():
+        """Return default image path."""
+        return os.path.join(
+            'user_map',
+            'images',
+            'default.png')
 
     name = models.CharField(
         verbose_name='Name',
@@ -28,6 +68,13 @@ class User(AbstractBaseUser):
         null=False,
         blank=False,
         unique=True)
+    image = models.ImageField(
+        verbose_name='Image',
+        help_text='Your photo',
+        upload_to=image_path,
+        blank=True,
+        default=default_image_path,
+        validators=[validate_image])
     website = models.URLField(
         verbose_name='Website',
         help_text='Optional link to your personal or organisation web site.',
@@ -40,7 +87,20 @@ class User(AbstractBaseUser):
         max_length=255,
         null=False,
         blank=False)
-    roles = models.ManyToManyField(Role, verbose_name='Roles', blank=False)
+    inasafe_roles = models.ManyToManyField(
+        InasafeRole,
+        verbose_name='InaSAFE Roles',
+        blank=False)
+    osm_roles = models.ManyToManyField(
+        OsmRole,
+        verbose_name='OSM Roles',
+        blank=False)
+    osm_username = models.CharField(
+        verbose_name='OSM Username',
+        help_text='Your OSM username.',
+        max_length=100,
+        null=False,
+        blank=True)
     email_updates = models.BooleanField(
         verbose_name='Receiving Updates',
         help_text='Tick this to receive occasional news email messages.',
@@ -48,6 +108,14 @@ class User(AbstractBaseUser):
     date_joined = models.DateTimeField(
         verbose_name='Join Date',
         auto_now_add=True)
+    is_certified_inasafe_trainer = models.BooleanField(
+        verbose_name='Certified InaSAFE Trainer',
+        help_text='Whether this user is a certified InaSAFE trainer or not.',
+        default=False)
+    is_certified_osm_trainer = models.BooleanField(
+        verbose_name='Admin Status',
+        help_text='Whether this user is a certified OSM trainer or not.',
+        default=False)
     is_active = models.BooleanField(
         verbose_name='Active Status',
         help_text='Whether this user is still active or not (a user could be '
@@ -91,9 +159,13 @@ class User(AbstractBaseUser):
         """
         return self.name
 
-    def get_roles(self):
-        """The role(s) of the user."""
-        return ', '.join([role.name for role in self.roles.all()])
+    def get_inasafe_roles(self):
+        """The InaSAFE role(s) of the user."""
+        return ', '.join([role.name for role in self.inasafe_roles.all()])
+
+    def get_osm_roles(self):
+        """The OSM role(s) of the user."""
+        return ', '.join([role.name for role in self.osm_roles.all()])
 
     @property
     def is_staff(self):
@@ -133,11 +205,19 @@ class User(AbstractBaseUser):
         """
         return self.is_admin
 
+
     def save(self, *args, **kwargs):
         """Override save method."""
         if not self.pk:
             # New object here
             self.key = get_random_string()
+        else:
+            # Saving a not new object
+            user = User.objects.get(pk=self.pk)
+            # Remove the old image if it's new image
+            if user.image != self.image:
+                user.image.delete(save=False)
+
         # Wrap location data
         self.location.x = wrap_number(self.location.x, [-180, 180])
         self.location.y = wrap_number(self.location.y, [-90, 90])

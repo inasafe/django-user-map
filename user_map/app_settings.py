@@ -22,21 +22,41 @@ BRAND_LOGO = getattr(settings, 'USER_MAP_BRAND_LOGO', default_brand_logo)
 default_favicon_file = 'user_map/img/user-icon.png'
 FAVICON_FILE = getattr(settings, 'USER_MAP_FAVICON_FILE', default_favicon_file)
 
-#  USER ROLES: All user roles and their icons
-default_user_roles = [
+# PROJECTS
+default_projects = [
     dict(
-        name='User',
+        name='InaSAFE',
         icon='user_map/img/user-icon.png',
         shadow_icon='user_map/img/shadow-icon.png'),
     dict(
-        name='Trainer',
+        name='OpenStreetMap',
         icon='user_map/img/trainer-icon.png',
-        shadow_icon='user_map/img/shadow-icon.png'),
+        shadow_icon='user_map/img/shadow-icon.png')]
+PROJECTS = getattr(
+    settings, 'USER_MAP_PROJECTS', default_projects)
+
+# ROLES: All roles and their badges
+default_inasafe_roles = [
+    dict(
+        name='User',
+        badge='user_map/img/user-icon.png'),
+    dict(
+        name='Trainer',
+        badge='user_map/img/trainer-icon.png'),
     dict(
         name='Developer',
-        icon='user_map/img/developer-icon.png',
-        shadow_icon='user_map/img/shadow-icon.png')]
-USER_ROLES = getattr(settings, 'USER_MAP_USER_ROLES', default_user_roles)
+        badge='user_map/img/developer-icon.png')]
+INASAFE_ROLES = getattr(
+    settings, 'USER_MAP_INASAFE_ROLES', default_inasafe_roles)
+
+default_osm_roles = [
+    dict(
+        name='Mapper',
+        badge='user_map/img/user-icon.png'),
+    dict(
+        name='Trainer',
+        badge='user_map/img/trainer-icon.png')]
+OSM_ROLES = getattr(settings, 'USER_MAP_OSM_ROLES', default_osm_roles)
 
 # MAIL SENDER
 default_mail_sender = 'noreply@inasafe.org'

@@ -4,14 +4,14 @@ from django.contrib.gis.geos import Point
 import factory
 from factory import DjangoModelFactory
 
-from user_map.models import Role, User
+from user_map.models import OsmRole, User
 
 
 class RoleFactory(DjangoModelFactory):
     """Factory class for Role model."""
     class Meta:
         """Meta definition."""
-        model = Role
+        model = OsmRole
 
     name = factory.Sequence(lambda n: 'Role %s' % n)
     sort_number = factory.Sequence(lambda n: n)
