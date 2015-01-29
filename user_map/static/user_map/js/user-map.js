@@ -37,7 +37,6 @@ function createBasemap(url, attribution) {
  * @function bindPopup Bind popup to marker
  */
 function addUsers(url, project) {
-  alert(project['name']);
   $.ajax({
     type: 'GET',
     url: url,
