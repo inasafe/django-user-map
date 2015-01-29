@@ -214,8 +214,9 @@ class User(AbstractBaseUser):
         else:
             # Saving a not new object
             user = User.objects.get(pk=self.pk)
-            # Remove the old image
-            user.image.delete(save=False)
+            # Remove the old image if it's new image
+            if user.image != self.image:
+                user.image.delete(save=False)
 
         # Wrap location data
         self.location.x = wrap_number(self.location.x, [-180, 180])

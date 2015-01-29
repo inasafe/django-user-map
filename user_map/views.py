@@ -33,7 +33,7 @@ from user_map.forms import (
     CustomPasswordResetForm)
 from user_map.models import User
 from user_map.app_settings import (
-    PROJECT_NAME, DEFAULT_FROM_MAIL, LEAFLET_TILES)
+    PROJECT_NAME, PROJECTS, DEFAULT_FROM_MAIL, LEAFLET_TILES)
 from user_map.utilities.decorators import login_forbidden
 
 
@@ -54,6 +54,9 @@ def index(request):
     user_menu_button = loader.render_to_string(
         'user_map/user_menu_button.html', {'user': request.user})
 
+    legend = loader.render_to_string(
+        'user_map/legend.html', {'projects': PROJECTS})
+
     leaflet_tiles = dict(
         url=LEAFLET_TILES[1],
         attribution=LEAFLET_TILES[2]
@@ -62,24 +65,42 @@ def index(request):
         'data_privacy_content': data_privacy_content,
         'information_modal': information_modal,
         'user_menu_button': user_menu_button,
+        'projects': json.dumps(PROJECTS),
+        'legend': legend,
         'leaflet_tiles': leaflet_tiles
     }
     return render(request, 'user_map/index.html', context)
 
 
 def get_users(request):
-    """Return a json document of all users.
+    """Return a json document of users of the project.
 
-    This will only fetch users who have approved by email and still active.
+    Users will belong to InaSAFE layer if they only have InaSAFE roles. If
+    they have OSM role(s), they will belong to OSM layers.
+
+    This will only fetch users who have approved the registration by email and
+    still active.
 
     :param request: A django request object.
     :type request: request
     """
+
     if request.method == 'GET':
-        # Get user
-        users = User.objects.filter(
-            is_confirmed=True,
-            is_active=True)
+        # Get data:
+        project = str(request.GET['project'])
+
+        if project.lower() == 'inasafe':
+            users = User.objects.filter(
+                is_confirmed=True,
+                is_active=True,
+                osm_roles=None)
+        else:
+            inasafe_users = User.objects.filter(
+                is_confirmed=True,
+                is_active=True,
+                osm_roles=None).values('id')
+            users = User.objects.exclude(id__in=inasafe_users)
+
         context = {'users': users}
         users_json = loader.render_to_string(
             'user_map/users.json',

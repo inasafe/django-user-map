@@ -8,6 +8,7 @@
 
 /**
  * Create basemap instance to be used.
+ *
  * @param {string} url The URL for the tiles layer
  * @param {string} attribution The attribution of the layer
  * @property tileLayer
@@ -23,7 +24,49 @@ function createBasemap(url, attribution) {
 }
 
 /**
+ * Add users to the respective layer based on role.
+ *
+ * @param {string} url The url view to get users.
+ * @param {object} project The role object.
+ * @name L The Class from Leaflet.
+ * @property geoJson Property of L class.
+ * @property users Property of response object.
+ * @function addTo add child element to the map.
+ * @property properties Property of a feature.
+ * @property popupContent Property of properties.
+ * @function bindPopup Bind popup to marker
+ */
+function addUsers(url, project) {
+  alert(project['name']);
+  $.ajax({
+    type: 'GET',
+    url: url,
+    dataType: 'json',
+    data: {
+      project: project['name']
+    },
+    success: function (response) {
+      L.geoJson(
+          response.users,
+          {
+            onEachFeature: onEachFeature,
+            pointToLayer: function (feature, latlng) {
+              return L.marker(latlng,{icon: project['icon'] });
+            }
+          }).addTo(project['layer']);
+    }});
+
+  function onEachFeature(feature, layer) {
+    // Set the popup content if it does have the content
+    if (feature.properties && feature.properties.popupContent) {
+      layer.bindPopup(feature.properties.popupContent);
+    }
+  }
+}
+
+/**
  * Create IconMarkerBase that will be used for icon marker.
+ *
  * @param {string} shadow_icon_path The path to shadow icon.
  * @returns {object} IconMarkerBase
  * @property Icon
@@ -57,6 +100,7 @@ function createIconMarker(icon_path, shadow_path) {
 
 /**
  * Create Data Privacy Control instance on the bottom left of the map.
+ *
  * @property Control
  * @property DomUtil
  * @property DomEvent
@@ -93,6 +137,7 @@ function createDataPrivacyControl() {
 
 /**
  * Create User Menu Control on the top left of the map.
+ *
  * @param {Array} options List of menu that should be added.
  *
  * Usage: createUserMenuControl(['add', 'download']) to show add-user menu and download menu
@@ -137,9 +182,38 @@ function createUserMenuControl(options) {
 }
 
 /**
+ * Create legend control instance on the bottom right of the map.
+ *
+ * @returns {object} control
+ */
+function createLegendControl(){
+  var control;
+  control = L.Control.extend({
+    options: {
+      position: 'bottomright'
+    },
+    onAdd: function () {
+      var legend_container = L.DomUtil.create('div', 'info legend');
+      legend_container.innerHTML += $("#legend").html();
+
+      //Prevent firing drag and onClickMap event when clicking this control
+      var stop = L.DomEvent.stopPropagation;
+      L.DomEvent
+          .on(legend_container, 'click', stop)
+          .on(legend_container, 'mousedown', stop)
+          .on(legend_container, 'dblclick', stop)
+          .on(legend_container, 'click', L.DomEvent.preventDefault);
+      return legend_container;
+    }
+  });
+  return control;
+}
+
+/**
  * Open an information modal. There is only one modal to use for showing information.
  * This function should be used if there is no other specific behaviour about the modal.
  * Element #information_modal is declared in base.html.
+ *
  * @param info_title The title of the modal (usually set as 'Information').
  * @param info_content The content of information.
  */
