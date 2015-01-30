@@ -19,18 +19,18 @@ default_brand_logo = 'user_map/img/logo.png'
 BRAND_LOGO = getattr(settings, 'USER_MAP_BRAND_LOGO', default_brand_logo)
 
 # FAVICON_FILE: Favicon for this apps
-default_favicon_file = 'user_map/img/user-icon.png'
+default_favicon_file = 'user_map/img/inasafe-icon.png'
 FAVICON_FILE = getattr(settings, 'USER_MAP_FAVICON_FILE', default_favicon_file)
 
 # PROJECTS
 default_projects = [
     dict(
         name='InaSAFE',
-        icon='user_map/img/user-icon.png',
+        icon='user_map/img/inasafe-icon.png',
         shadow_icon='user_map/img/shadow-icon.png'),
     dict(
         name='OpenStreetMap',
-        icon='user_map/img/trainer-icon.png',
+        icon='user_map/img/osm-icon.png',
         shadow_icon='user_map/img/shadow-icon.png')]
 PROJECTS = getattr(
     settings, 'USER_MAP_PROJECTS', default_projects)
@@ -39,24 +39,36 @@ PROJECTS = getattr(
 default_inasafe_roles = [
     dict(
         name='User',
-        badge='user_map/img/user-icon.png'),
+        badge='user_map/img/inasafe-badge-user.png'),
     dict(
         name='Trainer',
-        badge='user_map/img/trainer-icon.png'),
+        badge='user_map/img/inasafe-badge-trainer.png'),
     dict(
         name='Developer',
-        badge='user_map/img/developer-icon.png')]
+        badge='user_map/img/inasafe-badge-developer.png')]
 INASAFE_ROLES = getattr(
     settings, 'USER_MAP_INASAFE_ROLES', default_inasafe_roles)
+
+INASAFE_CERTIFIED_TRAINER_BADGE = getattr(
+    settings,
+    'USER_MAP_INASAFE_CERTIFIED_TRAINER_BADGE',
+    'user_map/img/inasafe-badge-certified-trainer.png'
+)
 
 default_osm_roles = [
     dict(
         name='Mapper',
-        badge='user_map/img/user-icon.png'),
+        badge='user_map/img/osm-badge-mapper.png'),
     dict(
         name='Trainer',
-        badge='user_map/img/trainer-icon.png')]
+        badge='user_map/img/osm-badge-trainer.png')]
 OSM_ROLES = getattr(settings, 'USER_MAP_OSM_ROLES', default_osm_roles)
+
+OSM_CERTIFIED_TRAINER_BADGE = getattr(
+    settings,
+    'USER_MAP_OSM_CERTIFIED_TRAINER_BADGE',
+    'user_map/img/osm-badge-certified-trainer.png'
+)
 
 # MAIL SENDER
 default_mail_sender = 'noreply@inasafe.org'

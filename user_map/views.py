@@ -33,7 +33,12 @@ from user_map.forms import (
     CustomPasswordResetForm)
 from user_map.models import User
 from user_map.app_settings import (
-    PROJECT_NAME, PROJECTS, DEFAULT_FROM_MAIL, LEAFLET_TILES)
+    PROJECT_NAME,
+    PROJECTS,
+    INASAFE_CERTIFIED_TRAINER_BADGE,
+    OSM_CERTIFIED_TRAINER_BADGE,
+    DEFAULT_FROM_MAIL,
+    LEAFLET_TILES)
 from user_map.utilities.decorators import login_forbidden
 
 
@@ -95,13 +100,15 @@ def get_users(request):
                 is_active=True,
                 osm_roles=None)
         else:
-            inasafe_users = User.objects.filter(
-                is_confirmed=True,
-                is_active=True,
-                osm_roles=None).values('id')
-            users = User.objects.exclude(id__in=inasafe_users)
+            inasafe_users = User.objects.filter(osm_roles=None).values('id')
+            users = User.objects.filter(
+                is_confirmed=True).exclude(id__in=inasafe_users)
 
-        context = {'users': users}
+        context = {
+            'users': users,
+            'inasafe_cert_trainer_badge': INASAFE_CERTIFIED_TRAINER_BADGE,
+            'osm_cert_trainer_badge': OSM_CERTIFIED_TRAINER_BADGE
+        }
         users_json = loader.render_to_string(
             'user_map/users.json',
             context_instance=RequestContext(request, context))
@@ -294,8 +301,11 @@ def update_user(request):
             basic_info_form = BasicInformationForm(instance=request.user)
             if change_password_form.is_valid():
                 user = change_password_form.save()
+
                 messages.success(
-                    request, 'You have successfully changed your password!')
+                    request, 'You have successfully changed your password! '
+                             'Please sign in to continue updating your '
+                             'profile.')
                 return HttpResponseRedirect(
                     reverse('user_map:update_user') + anchor_id)
             else:

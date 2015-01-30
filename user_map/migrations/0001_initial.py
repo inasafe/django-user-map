@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 from django.db import models, migrations
 import django.utils.timezone
+import user_map.models.user
 import django.contrib.gis.db.models.fields
 
 
@@ -20,7 +21,7 @@ class Migration(migrations.Migration):
                 ('last_login', models.DateTimeField(default=django.utils.timezone.now, verbose_name='last login')),
                 ('name', models.CharField(help_text=b'Your name.', max_length=100, verbose_name=b'Name')),
                 ('email', models.EmailField(help_text=b'Your email.', unique=True, max_length=75, verbose_name=b'E-mail')),
-                ('image', models.ImageField(default=b'images/users/default.png', upload_to=b'images/users/', blank=True, help_text=b'Your photo', verbose_name=b'Image')),
+                ('image', models.ImageField(validators=[user_map.models.user.validate_image], upload_to=user_map.models.user.image_path, blank=True, help_text=b'Your photo', verbose_name=b'Image')),
                 ('website', models.URLField(help_text=b'Optional link to your personal or organisation web site.', verbose_name=b'Website', blank=True)),
                 ('location', django.contrib.gis.db.models.fields.PointField(help_text=b'Where are you?', srid=4326, max_length=255, verbose_name=b'Location')),
                 ('osm_username', models.CharField(help_text=b'Your OSM username.', max_length=100, verbose_name=b'OSM Username', blank=True)),
@@ -42,6 +43,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(help_text=b'How would you define your InaSAFE Role in this project?', max_length=100)),
+                ('badge', models.CharField(help_text=b'The path to the badge', max_length=200)),
                 ('sort_number', models.IntegerField(help_text=b'Sorting order for role in role list.', null=True, blank=True)),
             ],
             options={
@@ -53,6 +55,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(help_text=b'How would you define your OSM Role in this project?', max_length=100)),
+                ('badge', models.CharField(help_text=b'The path to the badge', max_length=100)),
                 ('sort_number', models.IntegerField(help_text=b'Sorting order for role in role list.', null=True, blank=True)),
             ],
             options={

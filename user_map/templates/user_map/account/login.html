@@ -15,6 +15,20 @@
     <h2>Sign In <br><small>Please provide your account information on the form
       below.</small></h2>
     </div>
+
+    <div class="system-message">
+      {% if messages %}
+        {% for message in messages %}
+          {% if 'success' in message.tags %}
+            <div class="alert alert-success">
+              <a class="close" href="#" data-dismiss="alert">x</a>
+              {{ message }}
+            </div>
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+    </div>
+
     <div class="login-form">
       <form class="form-horizontal" action='#' method='POST'>
         {% csrf_token %}

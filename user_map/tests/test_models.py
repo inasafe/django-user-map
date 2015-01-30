@@ -2,31 +2,34 @@
 """Module related to test for all the models."""
 from django.test import TestCase
 
-from user_map.tests.model_factories import RoleFactory, UserFactory
+from user_map.tests.model_factories import (
+    InasafeRoleFactory,
+    OsmRoleFactory,
+    UserFactory)
 
 
-class TestRole(TestCase):
-    """Class to test Role model."""
+class TestInasafeRole(TestCase):
+    """Class to test InaSAFE Role model."""
     def setUp(self):
         pass
 
     def test_create_role(self):
         """Method to test role creation."""
-        role = RoleFactory.create()
+        role = InasafeRoleFactory.create()
         message = 'The role is not instantiated successfully.'
         self.assertIsNotNone(role.id, message)
 
     def test_read_role(self):
         """Method to test reading role."""
         role_name = 'Testing Role'
-        role = RoleFactory.create(name=role_name)
+        role = InasafeRoleFactory.create(name=role_name)
         message = 'The role name should be %s, but it gives %s' % (
             role_name, role.name)
         self.assertEqual(role_name, role.name, message)
 
     def test_update_role(self):
         """Method to test updating role."""
-        role = RoleFactory.create(name='Testing User')
+        role = InasafeRoleFactory.create(name='Testing User')
         role_name = 'Updated Testing User'
         role.name = role_name
         role.save()
@@ -36,7 +39,44 @@ class TestRole(TestCase):
 
     def test_delete_role(self):
         """Method to test deleting role."""
-        role = RoleFactory.create()
+        role = InasafeRoleFactory.create()
+        self.assertIsNotNone(role.id)
+        role.delete()
+        message = 'The role is not deleted.'
+        self.assertIsNone(role.id, message)
+
+class TestOsmRole(TestCase):
+    """Class to test OSM Role model."""
+    def setUp(self):
+        pass
+
+    def test_create_role(self):
+        """Method to test role creation."""
+        role = OsmRoleFactory.create()
+        message = 'The role is not instantiated successfully.'
+        self.assertIsNotNone(role.id, message)
+
+    def test_read_role(self):
+        """Method to test reading role."""
+        role_name = 'Testing Role'
+        role = OsmRoleFactory.create(name=role_name)
+        message = 'The role name should be %s, but it gives %s' % (
+            role_name, role.name)
+        self.assertEqual(role_name, role.name, message)
+
+    def test_update_role(self):
+        """Method to test updating role."""
+        role = OsmRoleFactory.create(name='Testing Mapper')
+        role_name = 'Updated Testing Mapper'
+        role.name = role_name
+        role.save()
+        message = 'The role name should be %s, but it gives %s' % (
+            role_name, role.name)
+        self.assertEqual(role_name, role.name, message)
+
+    def test_delete_role(self):
+        """Method to test deleting role."""
+        role = OsmRoleFactory.create()
         self.assertIsNotNone(role.id)
         role.delete()
         message = 'The role is not deleted.'

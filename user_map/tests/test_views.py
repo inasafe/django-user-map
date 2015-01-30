@@ -40,7 +40,9 @@ class UserMapViewTests(TestCase):
 
     def test_get_users(self):
         """Test for get_users view."""
-        response = self.client.get(reverse('user_map:get_users'))
+        response = self.client.get(
+            reverse('user_map:get_users'),
+            {'project': 'Test InaSAFE'})
         self.assertEqual(response['Content-Type'], 'application/json')
         self.assertContains(response, 'FeatureCollection')
         self.assertContains(response, self.user.name)
@@ -49,7 +51,7 @@ class UserMapViewTests(TestCase):
         """Test get_users view."""
         response = self.client.post(
             reverse('user_map:get_users'),
-            {'project': 'Test User'})
+            {'project': 'Test InaSAFE'})
         self.assertEqual(response.status_code, 404)
 
     def test_show_register_page(self):
@@ -65,13 +67,17 @@ class UserMapViewTests(TestCase):
             {
                 'name': 'John Doe',
                 'email': 'john.doe@gmail.com',
+                'image': '',
                 'password': 'password',
                 'password2': 'password',
                 'website': '',
-                'roles': '1',
-                'location': ('{"type":"Point","coordinates":[22.5,'
-                             '-16.63619187839765]}')
+                'inasafe_roles': '1',
+                'osm_roles': '2',
+                'osm_username': '',
+                'location': (
+                    '{"type":"Point","coordinates":[22.5,-16.63619187839765]}')
             })
+
         self.assertRedirects(
             response,
             reverse('user_map:register'),
@@ -165,7 +171,7 @@ class UserMapViewTests(TestCase):
                 'name': 'UpdatedName',
                 'email': self.email,
                 'website': 'http://updated-site.com',
-                'roles': '1',
+                'inasafe_roles': '1',
                 'location': ('{"type":"Point","coordinates":[22.5, '
                              '-16.63619187839765]}'),
                 'email_updates': 'on',
@@ -199,11 +205,13 @@ class UserMapViewTests(TestCase):
         )
         response = self.client.post(
             reverse('user_map:update_user'), form_content)
+        # As it will go to login page after successfully changing password,
+        # the target status code will be 302
         self.assertRedirects(
             response,
             reverse('user_map:update_user') + '#security',
             302,
-            200)
+            302)
 
         # Logout
         self.client.logout()
