@@ -301,8 +301,11 @@ def update_user(request):
             basic_info_form = BasicInformationForm(instance=request.user)
             if change_password_form.is_valid():
                 user = change_password_form.save()
+
                 messages.success(
-                    request, 'You have successfully changed your password!')
+                    request, 'You have successfully changed your password! '
+                             'Please sign in to continue updating your '
+                             'profile.')
                 return HttpResponseRedirect(
                     reverse('user_map:update_user') + anchor_id)
             else:

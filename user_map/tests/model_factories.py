@@ -4,16 +4,28 @@ from django.contrib.gis.geos import Point
 import factory
 from factory import DjangoModelFactory
 
-from user_map.models import OsmRole, User
+from user_map.models import InasafeRole, OsmRole, User
 
 
-class RoleFactory(DjangoModelFactory):
-    """Factory class for Role model."""
+class InasafeRoleFactory(DjangoModelFactory):
+    """Factory class for InaSAFE Role model."""
+    class Meta:
+        """Meta definition."""
+        model = InasafeRole
+
+    name = factory.Sequence(lambda n: 'InaSAFE Role %s' % n)
+    badge = factory.Sequence(lambda n: '/image/badge-%s' % n)
+    sort_number = factory.Sequence(lambda n: n)
+
+
+class OsmRoleFactory(DjangoModelFactory):
+    """Factory class for OSM Role model."""
     class Meta:
         """Meta definition."""
         model = OsmRole
 
-    name = factory.Sequence(lambda n: 'Role %s' % n)
+    name = factory.Sequence(lambda n: 'OSM Role %s' % n)
+    badge = factory.Sequence(lambda n: '/image/badge-%s' % n)
     sort_number = factory.Sequence(lambda n: n)
 
 
@@ -33,9 +45,16 @@ class UserFactory(DjangoModelFactory):
 
     @classmethod
     def _prepare(cls, create, **kwargs):
-        role_1 = RoleFactory()
-        role_2 = RoleFactory()
+        inasafe_role_1 = InasafeRoleFactory()
+        inasafe_role_2 = InasafeRoleFactory()
+        osm_role_1 = OsmRoleFactory()
+        osm_role_2 = OsmRoleFactory()
+
         user = super(UserFactory, cls)._prepare(create, **kwargs)
-        user.roles.add(role_1)
-        user.roles.add(role_2)
+
+        user.inasafe_roles.add(inasafe_role_1)
+        user.inasafe_roles.add(inasafe_role_2)
+
+        user.osm_roles.add(osm_role_1)
+        user.osm_roles.add(osm_role_2)
         return user
