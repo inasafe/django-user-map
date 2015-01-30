@@ -14,47 +14,41 @@ from user_map.models.osm_role import OsmRole
 from user_map.utilities.utilities import wrap_number
 
 
+def validate_image(fieldfile_obj):
+    """Validate the image uploaded by user.
+
+    :param fieldfile_obj: The object of the file field.
+    :type fieldfile_obj: File (django.core.files)
+    """
+    file_size = fieldfile_obj.file.size
+    size_limit_mb = 2.0
+    size_limit = size_limit_mb * 1024 * 1024
+    if file_size > size_limit:
+        raise ValidationError(
+            'Maximum image size is %s MB' % size_limit_mb)
+
+
+def image_path(instance, file_name):
+    """Return the proper image path to upload.
+
+    :param file_name: The original file name.
+    :type file_name: str
+    """
+    _, ext = os.path.splitext(file_name)
+
+    file_name = '%s%s' % (uuid.uuid4().hex, ext)
+    return os.path.join(
+        'user_map',
+        'images',
+        file_name)
+
+
 class User(AbstractBaseUser):
     """User class for InaSAFE User Map."""
 
     class Meta:
         """Meta class."""
         app_label = 'user_map'
-
-    def validate_image(fieldfile_obj):
-        """Validate the image uploaded by user.
-
-        :param fieldfile_obj: The object of the file field.
-        :type fieldfile_obj: File (django.core.files)
-        """
-        file_size = fieldfile_obj.file.size
-        size_limit_mb = 2.0
-        size_limit = size_limit_mb * 1024 * 1024
-        if file_size > size_limit:
-            raise ValidationError(
-                'Maximum image size is %s MB' % size_limit_mb)
-
-    def image_path(instance, file_name):
-        """Return the proper image path to upload.
-
-        :param file_name: The original file name.
-        :type file_name: str
-        """
-        _, ext = os.path.splitext(file_name)
-
-        file_name = '%s%s' % (uuid.uuid4().hex, ext)
-        return os.path.join(
-            'user_map',
-            'images',
-            file_name)
-
-    @staticmethod
-    def default_image_path():
-        """Return default image path."""
-        return os.path.join(
-            'user_map',
-            'images',
-            'default.png')
 
     name = models.CharField(
         verbose_name='Name',
@@ -72,8 +66,8 @@ class User(AbstractBaseUser):
         verbose_name='Image',
         help_text='Your photo',
         upload_to=image_path,
+        null=False,
         blank=True,
-        default=default_image_path,
         validators=[validate_image])
     website = models.URLField(
         verbose_name='Website',

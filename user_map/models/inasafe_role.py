@@ -14,6 +14,11 @@ class InasafeRole(models.Model):
         max_length=100,
         null=False,
         blank=False)
+    badge = models.CharField(
+        help_text='The path to the badge',
+        max_length=200,
+        null=False,
+        blank=False)
     sort_number = models.IntegerField(
         help_text='Sorting order for role in role list.',
         null=True,

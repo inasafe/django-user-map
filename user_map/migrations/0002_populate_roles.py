@@ -17,16 +17,18 @@ def populate_roles(apps, schema_editor):
     """
     # Populate InaSAFE Roles
     InasafeRole = apps.get_model('user_map', 'InasafeRole')
-    for idx, user_role in enumerate(INASAFE_ROLES):
+    for idx, inasafe_role in enumerate(INASAFE_ROLES):
         InasafeRole.objects.create(
-            name=user_role['name'],
+            name=inasafe_role['name'],
+            badge=inasafe_role['badge'],
             sort_number=(idx + 1))
 
     # Populate OSM Roles
     OsmRole = apps.get_model('user_map', 'OsmRole')
-    for idx, user_role in enumerate(OSM_ROLES):
+    for idx, osm_role in enumerate(OSM_ROLES):
         OsmRole.objects.create(
-            name=user_role['name'],
+            name=osm_role['name'],
+            badge=osm_role['badge'],
             sort_number=(idx + 1))
 
 class Migration(migrations.Migration):
