@@ -16,7 +16,7 @@
       below.</small></h2>
     </div>
 
-    <div class="system-message">
+    <div class="login-form">
       {% if messages %}
         {% for message in messages %}
           {% if 'success' in message.tags %}
@@ -27,9 +27,7 @@
           {% endif %}
         {% endfor %}
       {% endif %}
-    </div>
-
-    <div class="login-form">
+    
       <form class="form-horizontal" action='#' method='POST'>
         {% csrf_token %}
         {{ form|bootstrap_horizontal:'col-lg-2'}}
